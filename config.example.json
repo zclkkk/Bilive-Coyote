@@ -1,0 +1,6 @@
+{
+  "base_url": "http://127.0.0.1:8920",
+  "client_id": "YOUR_CLIENT_UUID",
+  "token": "",
+  "timeout": 10
+}
