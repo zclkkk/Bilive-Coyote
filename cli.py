@@ -5,7 +5,10 @@ import json
 from pathlib import Path
 from typing import Any, Dict
 
-from .client import DGLabAPIError, DGLabClient
+from dglab_controller.api import CoyoteAPI
+from dglab_controller.client import DGLabAPIError, DGLabClient
+from integrations.bilibili_live import BilibiliLiveBridge, BilibiliLiveConfig, BilibiliLiveError
+from integrations.gift_actions import GiftActionError, GiftActionService
 
 
 DEFAULT_BASE_URL = "http://127.0.0.1:8920"
@@ -28,6 +31,10 @@ def build_client(args: argparse.Namespace) -> DGLabClient:
     )
 
 
+def build_api(args: argparse.Namespace) -> CoyoteAPI:
+    return CoyoteAPI(build_client(args))
+
+
 def print_json(data: Dict[str, Any]) -> None:
     print(json.dumps(data, ensure_ascii=False, indent=2))
 
@@ -43,6 +50,7 @@ def make_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("game-api-info", help="Get game API info")
     subparsers.add_parser("game-info", help="Get game info for the specified client")
     subparsers.add_parser("strength-info", help="Get strength config for the specified client")
+    subparsers.add_parser("watch-live-gifts", help="Listen for Bilibili live gifts and apply strength changes")
     p_strength = subparsers.add_parser("strength", help="Change strength")
     p_strength.add_argument("--target", choices=["base", "random"], required=True, help="Strength target")
     p_strength.add_argument("--action", choices=["add", "sub", "set"], required=True, help="Strength action")
@@ -60,22 +68,27 @@ def make_parser() -> argparse.ArgumentParser:
 def main() -> int:
     parser = make_parser()
     args = parser.parse_args()
-    client = build_client(args)
+    config = load_config()
+    api = build_api(args)
 
     try:
         if args.command == "server-info":
-            print_json(client.get_server_info())
+            print_json(api.get_server_info())
         elif args.command == "game-api-info":
-            print_json(client.get_game_api_info())
+            print_json(api.get_game_api_info())
         elif args.command == "game-info":
-            print_json(client.get_game_info())
+            print_json(api.get_game_info())
         elif args.command == "strength-info":
-            print_json(client.get_strength_config())
+            print_json(api.get_strength_info())
+        elif args.command == "watch-live-gifts":
+            live_config = BilibiliLiveConfig.from_dict(config.get("bilibili"))
+            gift_service = GiftActionService(api, live_config.gift_actions)
+            BilibiliLiveBridge(live_config, gift_service, timeout=api.client.timeout).run()
         elif args.command == "strength":
-            print_json(client.change_strength(target=args.target, action=args.action, value=args.value))
+            print_json(api.change_strength(target=args.target, action=args.action, value=args.value))
         elif args.command == "fire":
             print_json(
-                client.fire(
+                api.fire(
                     strength=args.strength,
                     time_ms=args.time_ms,
                     override=args.override,
@@ -85,7 +98,7 @@ def main() -> int:
         else:
             parser.error(f"Unknown command: {args.command}")
         return 0
-    except (DGLabAPIError, FileNotFoundError, ValueError) as exc:
+    except (DGLabAPIError, FileNotFoundError, ValueError, BilibiliLiveError, GiftActionError) as exc:
         print(f"ERROR: {exc}")
         return 1
 
