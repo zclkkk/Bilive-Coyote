@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable
 
-from dglab_controller.api import CoyoteAPI
+from coyote_controller.api import CoyoteAPI
 
 
 class GiftActionError(RuntimeError):

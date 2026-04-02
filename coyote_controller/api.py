@@ -3,12 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
-from .client import DGLabClient
+from .client import CoyoteClient
 
 
 @dataclass
 class CoyoteAPI:
-    client: DGLabClient
+    client: CoyoteClient
 
     def get_server_info(self) -> Dict[str, Any]:
         return self.client.get_server_info()

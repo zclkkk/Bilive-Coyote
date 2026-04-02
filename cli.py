@@ -5,8 +5,8 @@ import json
 from pathlib import Path
 from typing import Any, Dict
 
-from dglab_controller.api import CoyoteAPI
-from dglab_controller.client import DGLabAPIError, DGLabClient
+from coyote_controller.api import CoyoteAPI
+from coyote_controller.client import CoyoteAPIError, CoyoteClient
 from integrations.bilibili_live import BilibiliLiveBridge, BilibiliLiveConfig, BilibiliLiveError
 from integrations.gift_actions import GiftActionError, GiftActionService
 
@@ -21,9 +21,9 @@ def load_config() -> Dict[str, Any]:
     return json.loads(DEFAULT_CONFIG_PATH.read_text(encoding="utf-8"))
 
 
-def build_client(args: argparse.Namespace) -> DGLabClient:
+def build_client(args: argparse.Namespace) -> CoyoteClient:
     config = load_config()
-    return DGLabClient(
+    return CoyoteClient(
         base_url=args.base_url or config.get("base_url") or DEFAULT_BASE_URL,
         client_id=config.get("client_id") or None,
         token=args.token or config.get("token") or None,
@@ -98,7 +98,7 @@ def main() -> int:
         else:
             parser.error(f"Unknown command: {args.command}")
         return 0
-    except (DGLabAPIError, FileNotFoundError, ValueError, BilibiliLiveError, GiftActionError) as exc:
+    except (CoyoteAPIError, FileNotFoundError, ValueError, BilibiliLiveError, GiftActionError) as exc:
         print(f"ERROR: {exc}")
         return 1
 

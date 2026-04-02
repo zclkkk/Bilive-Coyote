@@ -6,12 +6,12 @@ from typing import Any, Dict, Optional
 import requests
 
 
-class DGLabAPIError(RuntimeError):
-    """Raised when the DG-Lab API returns an error."""
+class CoyoteAPIError(RuntimeError):
+    """Raised when the Coyote API returns an error."""
 
 
 @dataclass
-class DGLabClient:
+class CoyoteClient:
     base_url: str = "http://127.0.0.1:8920"
     client_id: Optional[str] = None
     token: Optional[str] = None
@@ -40,17 +40,17 @@ class DGLabClient:
         try:
             response.raise_for_status()
         except requests.HTTPError as exc:
-            raise DGLabAPIError(f"HTTP {response.status_code} for {url}: {response.text}") from exc
+            raise CoyoteAPIError(f"HTTP {response.status_code} for {url}: {response.text}") from exc
 
         try:
             data = response.json()
         except ValueError as exc:
-            raise DGLabAPIError(f"Invalid JSON from {url}: {response.text}") from exc
+            raise CoyoteAPIError(f"Invalid JSON from {url}: {response.text}") from exc
 
         if isinstance(data, dict) and data.get("status") == 0:
             code = data.get("code", "UNKNOWN")
             message = data.get("message", "")
-            raise DGLabAPIError(f"API error {code}: {message}")
+            raise CoyoteAPIError(f"API error {code}: {message}")
 
         return data
 

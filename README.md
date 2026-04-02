@@ -11,10 +11,10 @@
   应用层命令行入口，负责组装控制层和各类 integration
 - `main.py`
   最薄启动入口
-- `dglab_controller/api.py`
+- `coyote_controller/api.py`
   对外的控制层，别的模块只需要调这里
-- `dglab_controller/client.py`
-  只负责 DG-Lab HTTP API 请求
+- `coyote_controller/client.py`
+  只负责 Coyote HTTP API 请求
 - `integrations/gift_actions.py`
   负责礼物事件、礼物规则和执行逻辑
 - `integrations/bilibili_live.py`
@@ -126,12 +126,12 @@ python main.py watch-live-gifts
 1. 调用 Bilibili 开放平台 `/v2/app/start`
 2. 建立 websocket 连接
 3. 监听 `LIVE_OPEN_PLATFORM_SEND_GIFT`
-4. 命中规则后调用本地 DG-Lab HTTP API 改强度
+4. 命中规则后调用本地 Coyote HTTP API 改强度
 
 ## Python 调用
 
 ```python
-from dglab_controller import CoyoteAPI, DGLabClient
+from coyote_controller import CoyoteAPI, DGLabClient
 
 api = CoyoteAPI(
     DGLabClient(
